@@ -20,7 +20,7 @@ class Tree
     end
     
     # Adds a child to this node.
-    def birth(id, value, index = @children.size())
+    def birth(id, value, index = @children.size)
       temp = Node.new(format("%s/%s", @id.to_s, id.to_s), value, self)
       @children.insert(index, temp)
       return temp
@@ -84,13 +84,13 @@ class Tree
     # Removes this node's children with id.
     def lose_child_id(id)
       temp = @children.select { |child| child.id == id }
-      temp.each { |match| lose_child_index(@children.index(match)) }
+      temp.each { |match| lose_child_index(match.index) }
     end
 
     # Removes this node's children with value.
     def lose_child_value(value)
       temp = @children.select { |child| child.value == value }
-      temp.each { |match| lose_child_index(@children.index(match)) }
+      temp.each { |match| lose_child_index(match.index) }
     end
     
     # Returns this node's next sibling (right sibling).
@@ -100,7 +100,6 @@ class Tree
     
     # Returns this node's prev sibling (left sibling).
     def sibling_prev
-      temp = @parent.children.index(self)
       @parent.get(index - 1) unless is_first_sibling?
     end
 
@@ -130,10 +129,15 @@ class Tree
       @stack = Array.new
       push_left(tree.root)
     end
+    
+    # Indicates whether there are more nodes to be explored.
+    def has_next?
+      !@stack.empty?
+    end
 
     # Returns the value of the next node to be explored.
     def next
-      while !@stack.empty?
+      while has_next?
         current = @stack.pop
         if !current.is_last_sibling?
           push_left(current.sibling_next)
@@ -142,7 +146,7 @@ class Tree
       end
     end
     
-    # Pushes the node and its leftmost line of descendants
+    # Pushes the node and its leftmost line of descendants.
     def push_left(node)
       while node
         @stack.push(node)
@@ -156,6 +160,11 @@ class Tree
     @root = Node.new("~", value, nil)
   end
   
+  # Adds a node at the specified location.
+  def add(parent, id, value, index = parent.children.size)
+    parent.birth(id, value, index) if parent
+  end
+  
   # Returns the node at the specified location, relative to the root.
   def get(*index)
     temp = @root
@@ -163,7 +172,7 @@ class Tree
     return temp
   end
   
-  # Returns a post-order iterator for this tree
+  # Returns a post-order iterator for this tree.
   def post_order_iterator
     PostOrderIterator.new(self)
   end
